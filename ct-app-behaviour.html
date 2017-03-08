@@ -46,13 +46,14 @@
     },
 
     _authenticateUser: function(token) {
-      /*if (!token) {
+      if (!token) {
         this.user = null;
+        this._signedIn = false;
         return;
       }
-       this.signedIn = true;
+      this.signedIn = true;
 
-      this.$.usersAPI.getLoggedInUser()
+      /*this.$.usersAPI.getLoggedInUser()
               .then(function(request) {
                 this.user = request.response;
                 CT.userId = this.user.id;
