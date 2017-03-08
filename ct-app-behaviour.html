@@ -22,6 +22,10 @@
       '_refresh(clientId)'
     ],
 
+    _getTokenRedirectUri: function() {
+      return encodeURIComponent(window.location.origin + '/oauth')
+    },
+
     _routeChanged: function(routeData) {
       if (routeData.prefix !== '/oauth') {
         return;
