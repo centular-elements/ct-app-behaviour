@@ -14,11 +14,55 @@
       'ct-page-to': '_pageTo'
     },
     observers: [
+      '_routeChanged(routeData)',
+      '_authenticateUser(token)',
       '_routePageChanged(routeData.page, signedIn)',
       '_toggleRefreshBtn(page, signedIn)',
       '_setClientId(clientId)',
       '_refresh(clientId)'
     ],
+
+    _routeChanged: function(routeData) {
+      if (routeData.prefix !== '/oauth') {
+        return;
+      }
+
+      if (routeData.__queryParams.access_token) {
+        this._setToken(routeData.__queryParams.access_token);
+      }
+
+      // TODO handle errors
+
+      window.history.pushState(null,'','/');
+    },
+
+    _setToken: function(token) {
+      this.$.storage.value = this.token = CT.token = token;
+      this.$.storage.save();
+    },
+
+    _authenticateUser: function(token) {
+      /*if (!token) {
+        this.user = null;
+        return;
+      }
+       this.signedIn = true;
+
+      this.$.usersAPI.getLoggedInUser()
+              .then(function(request) {
+                this.user = request.response;
+                CT.userId = this.user.id;
+                this.fire('ct-sign-in', request.response);
+              }.bind(this))
+              .catch(ExpiredTokenError, function() {
+                this._setToken(null);
+                this.signIn();
+              }.bind(this))
+              .catch(function(error) {
+                this.fire('ct-sign-in-error', error);
+              }.bind(this));*/
+    },
+
     _routePageChanged: function(page, signedIn) {
       if (!signedIn) {
         return this.page = 'signin';
@@ -34,9 +78,6 @@
       }
       // load page import on demand.
       this.importHref(this.resolveUrl('views/' + this.appHandle + '-' + page + '.html'), null, null, true);
-    },
-    attached: function() {
-      this.initialClientId = CT.clientId;
     },
     _closeDrawer: function() {
       if (this.$.drawer.persistent) {
@@ -76,9 +117,6 @@
     },
     _computePermission: function(signedIn) {
       return signedIn ? 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u' : null;
-    },
-    _setClientId: function(clientId) {
-      CT.clientId = clientId || this.initialClientId;
     },
     _pageTo: function(event, detail) {
       window.history.pushState(null,'',detail);
