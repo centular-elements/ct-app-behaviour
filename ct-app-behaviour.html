@@ -14,8 +14,6 @@
       'ct-page-to': '_pageTo'
     },
     observers: [
-      '_routeChanged(routeData)',
-      '_authenticateUser(token)',
       '_routePageChanged(routeData.page, signedIn)',
       '_toggleRefreshBtn(page, signedIn)',
       '_setClientId(clientId)',
@@ -23,49 +21,7 @@
     ],
 
     _getTokenRedirectUri: function() {
-      return encodeURIComponent(window.location.origin + '/oauth')
-    },
-
-    _routeChanged: function(routeData) {
-      if (routeData.prefix !== '/oauth') {
-        return;
-      }
-
-      if (routeData.__queryParams.access_token) {
-        this._setToken(routeData.__queryParams.access_token);
-      }
-
-      // TODO handle errors
-
-      window.history.pushState(null,'','/');
-    },
-
-    _setToken: function(token) {
-      this.$.storage.value = this.token = CT.token = token;
-      this.$.storage.save();
-    },
-
-    _authenticateUser: function(token) {
-      if (!token) {
-        this.user = null;
-        this._signedIn = false;
-        return;
-      }
-      this.signedIn = true;
-
-      /*this.$.usersAPI.getLoggedInUser()
-              .then(function(request) {
-                this.user = request.response;
-                CT.userId = this.user.id;
-                this.fire('ct-sign-in', request.response);
-              }.bind(this))
-              .catch(ExpiredTokenError, function() {
-                this._setToken(null);
-                this.signIn();
-              }.bind(this))
-              .catch(function(error) {
-                this.fire('ct-sign-in-error', error);
-              }.bind(this));*/
+      return [window.location.origin, '/oauth'].join('')
     },
 
     _routePageChanged: function(page, signedIn) {
@@ -119,9 +75,6 @@
     },
     _toast: function(event, message) {
       this.$.toast.show(message);
-    },
-    _computePermission: function(signedIn) {
-      return signedIn ? 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u' : null;
     },
     _pageTo: function(event, detail) {
       window.history.pushState(null,'',detail);
