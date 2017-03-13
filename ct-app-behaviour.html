@@ -11,7 +11,9 @@
     },
     listeners: {
       'toast': '_toast',
-      'ct-page-to': '_pageTo'
+      'ct-page-to': '_pageTo',
+      'ct-sign-in': '_signedIn',
+      'ct-sign-out': '_signedOut'
     },
     observers: [
       '_routePageChanged(routeData.page, signedIn)',
@@ -19,6 +21,14 @@
       '_setClientId(clientId)',
       '_refresh(clientId)'
     ],
+
+    _signedIn: function() {
+      this.signedIn = true;
+    },
+
+    _signedOut: function() {
+      this.signedIn = false;
+    },
 
     _getTokenRedirectUri: function() {
       return [window.location.origin, '/oauth'].join('')
