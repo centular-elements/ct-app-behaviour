@@ -30,7 +30,7 @@
 
     _routePageChanged: function(page, signedIn) {
       if (!signedIn) {
-        return this.page = 'signin';
+        return this.page = 'home';
       }
       if (!page && this.defaultPage.menuItem) {
         window.history.pushState(null, '', this.defaultPage.menuItem.href);
