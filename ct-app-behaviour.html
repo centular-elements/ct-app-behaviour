@@ -12,13 +12,12 @@
     listeners: {
       'toast': '_toast',
       'ct-page-to': '_pageTo',
-      'ct-sign-in': '_signedIn',
-      'ct-sign-out': '_signedOut'
+      'ct-signed-in': '_signedIn',
+      'ct-signed-out': '_signedOut'
     },
     observers: [
-      '_routePageChanged(routeData.page, signedIn)',
+      '_routePageChanged(routeData.page)',
       '_toggleRefreshBtn(page, signedIn)',
-      '_setClientId(clientId)',
       '_refresh(clientId)'
     ],
 
@@ -34,18 +33,13 @@
       return [window.location.origin, '/oauth'].join('')
     },
 
-    _getSignInPage: function() {
-      return [window.location.origin, '/sign-in'].join('')
-    },
-
-    _routePageChanged: function(page, signedIn) {
-      if (!signedIn) {
-        return this.page = 'sign-in';
+    _routePageChanged: function(page) {
+      if (page != 'oauth') {
+        if (!page && this.defaultPage.menuItem) {
+          window.history.pushState(null, '', this.defaultPage.menuItem.href);
+        }
+        this.page = page || this.defaultPage.name;
       }
-      if (!page && this.defaultPage.menuItem) {
-        window.history.pushState(null, '', this.defaultPage.menuItem.href);
-      }
-      this.page = page || this.defaultPage.name;
     },
     _pageChanged: function(page) {
       if (!page) {
@@ -76,8 +70,8 @@
     _navigateBack: function() {
       window.history.back();
     },
-    _toggleRefreshBtn: function(page, signedIn) {
-      this.$.refreshBtn.hidden = !signedIn || this.refreshablePages.indexOf(page) === -1;
+    _toggleRefreshBtn: function(page) {
+      this.$.refreshBtn.hidden = !this.signedIn || this.refreshablePages.indexOf(page) === -1;
     },
     _refresh: function() {
       if (this.activeView.refresh) {
