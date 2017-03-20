@@ -55,9 +55,13 @@
       this.$.drawer.close();
     },
     _computeMenuItems: function(signedIn) {
-      return !signedIn ? [] : this.pages.filter(function (page) {
-        return page.menuItem;
-      });
+      return signedIn
+              ? this.pages.filter(function (page) {
+                  return page.menuItem;
+                })
+              : this.pages.filter(function (page) {
+                  return this.guestPages.includes(page.name);
+                });
     },
     _getPageTitle: function(page) {
       return this.pages.reduce(function(prev, curr) {
@@ -116,6 +120,13 @@
      * @returns {String[]}
      */
     get refreshablePages() {
+      return [];
+    },
+    /**
+     * The app pages visible without being signed in.
+     * @returns {String[]}
+     */
+    get guestPages() {
       return [];
     }
   };
