@@ -61,7 +61,7 @@
                 })
               : this.pages.filter(function (page) {
                   return this.guestPages.includes(page.name);
-                });
+                }.bind(this));
     },
     _getPageTitle: function(page) {
       return this.pages.reduce(function(prev, curr) {
