@@ -57,11 +57,42 @@
     _computeMenuItems: function(signedIn) {
       return signedIn
               ? this.pages.filter(function (page) {
-                  return page.menuItem;
-                })
+        return page.menuItem && !page.parent;
+      })
               : this.pages.filter(function (page) {
-                  return this.guestPages.includes(page.name);
-                }.bind(this));
+        return this.guestPages.includes(page.name);
+      }.bind(this));
+    },
+    _hasSubMenuItems: function(parent) {
+      var has = this._computeSubMenuItems(parent).length > 0;
+      return has;
+    },
+    _computeSubMenuItems: function(parent) {
+      return this.pages.filter(function (page) {
+        return page.menuItem && page.menuItem.parent == parent;
+      });
+    },
+    _generateId: function(elementName, uniqueId) {
+      return elementName + '-' + uniqueId;
+    },
+    _menuItemTapped: function(e) {
+      Polymer.dom(this.$.drawer).querySelectorAll('paper-item').forEach(function(menuItem) {
+        this.toggleClass('selected', false, menuItem);
+      }.bind(this));
+      this.toggleClass('selected', true, e.currentTarget);
+      this._toggleSubMenuCollapse(e.currentTarget, Polymer.dom(e.currentTarget).querySelector('paper-icon-button'), true);
+      this._closeDrawer();
+    },
+    _collapseButtonTapped: function(e) {
+      this._toggleSubMenuCollapse(e.currentTarget, e.currentTarget, false);
+      e.stopPropagation();
+    },
+    _toggleSubMenuCollapse: function(target, collapseButton, openOnly) {
+      var subMenu = Polymer.dom(this.$.drawer).querySelector('#sub-menu-' + target.tag);
+      if (subMenu && (!subMenu.opened || !openOnly)) {
+        subMenu.toggle();
+        collapseButton.icon = subMenu.opened ? 'icons:expand-less' : 'icons:expand-more';
+      }
     },
     _getPageTitle: function(page) {
       return this.pages.reduce(function(prev, curr) {
@@ -137,11 +168,12 @@
       menuItem: menuItem
     };
   };
-  CT.PageMenuItem = function(name, href, icon) {
+  CT.PageMenuItem = function(name, href, icon, parent) {
     return {
       name: name,
       href: href,
-      icon: icon
+      icon: icon,
+      parent: parent
     };
   };
 </script>
