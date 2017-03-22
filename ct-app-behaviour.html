@@ -57,7 +57,7 @@
     _computeMenuItems: function(signedIn) {
       return signedIn
               ? this.pages.filter(function (page) {
-        return page.menuItem && !page.parent;
+        return page.menuItem && !page.menuItem.parent;
       })
               : this.pages.filter(function (page) {
         return this.guestPages.includes(page.name);
