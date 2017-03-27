@@ -37,6 +37,7 @@
       if (page != 'oauth') {
         if (!page && this.defaultPage.menuItem) {
           window.history.pushState(null, '', this.defaultPage.menuItem.href);
+
         }
         this.page = page || this.defaultPage.name;
       }
@@ -76,11 +77,14 @@
       return elementName + '-' + uniqueId;
     },
     _menuItemTapped: function(e) {
+      this._selectMenuItem(e.currentTarget);
+    },
+    _selectMenuItem: function(menuItem) {
       Polymer.dom(this.$.drawer).querySelectorAll('paper-item').forEach(function(menuItem) {
         this.toggleClass('selected', false, menuItem);
       }.bind(this));
-      this.toggleClass('selected', true, e.currentTarget);
-      this._toggleSubMenuCollapse(e.currentTarget, Polymer.dom(e.currentTarget).querySelector('paper-icon-button'), true);
+      this.toggleClass('selected', true, menuItem);
+      this._toggleSubMenuCollapse(menuItem, Polymer.dom(menuItem).querySelector('paper-icon-button'), true);
       this._closeDrawer();
     },
     _collapseButtonTapped: function(e) {
