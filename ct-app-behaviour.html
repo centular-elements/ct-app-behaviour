@@ -100,7 +100,9 @@
       var subMenu = Polymer.dom(this.$.drawer).querySelector('#' + target.collapseId);
       if (subMenu && (!subMenu.opened || !openOnly)) {
         subMenu.toggle();
-        collapseButton.icon = subMenu.opened ? 'icons:expand-less' : 'icons:expand-more';
+        if (collapseButton) {
+          collapseButton.icon = subMenu.opened ? 'icons:expand-less' : 'icons:expand-more';
+        }
       }
     },
 
