@@ -13,7 +13,8 @@
       'toast': '_toast',
       'ct-page-to': '_pageTo',
       'ct-signed-in': '_signedIn',
-      'ct-signed-out': '_signedOut'
+      'ct-signed-out': '_signedOut',
+      'iron-select': '_menuItemSelected'
     },
     observers: [
       '_routePageChanged(routeData.page)',
@@ -42,6 +43,7 @@
         this.page = page || this.defaultPage.name;
       }
     },
+
     _pageChanged: function(page) {
       if (!page) {
         return;
@@ -49,12 +51,14 @@
       // load page import on demand.
       this.importHref(this.resolveUrl('views/' + this.appHandle + '-' + page + '.html'), null, null, true);
     },
+
     _closeDrawer: function() {
       if (this.$.drawer.persistent) {
         return;
       }
       this.$.drawer.close();
     },
+
     _computeMenuItems: function(signedIn) {
       return signedIn
               ? this.pages.filter(function (page) {
@@ -64,40 +68,42 @@
         return this.guestPages.includes(page.name);
       }.bind(this));
     },
+
     _hasSubMenuItems: function(parent) {
-      var has = this._computeSubMenuItems(parent).length > 0;
-      return has;
+      return this._computeSubMenuItems(parent).length > 0;
     },
+
     _computeSubMenuItems: function(parent) {
       return this.pages.filter(function (page) {
         return page.menuItem && page.menuItem.parent == parent;
       });
     },
+
     _generateId: function(elementName, uniqueId) {
       return elementName + '-' + uniqueId;
     },
-    _menuItemTapped: function(e) {
-      this._selectMenuItem(e.currentTarget);
-    },
-    _selectMenuItem: function(menuItem) {
-      Polymer.dom(this.$.drawer).querySelectorAll('paper-item').forEach(function(menuItem) {
-        this.toggleClass('selected', false, menuItem);
-      }.bind(this));
-      this.toggleClass('selected', true, menuItem);
-      this._toggleSubMenuCollapse(menuItem, Polymer.dom(menuItem).querySelector('paper-icon-button'), true);
-      this._closeDrawer();
-    },
+
     _collapseButtonTapped: function(e) {
       this._toggleSubMenuCollapse(e.currentTarget, e.currentTarget, false);
       e.stopPropagation();
     },
+
+    _menuItemSelected: function(e) {
+      var selectedItem = Polymer.dom(this.$.topSelector).querySelector('.iron-selected');
+      if (selectedItem) {
+        this._toggleSubMenuCollapse(selectedItem, Polymer.dom(selectedItem).querySelector('paper-icon-button'), true);
+      }
+      this._closeDrawer();
+    },
+
     _toggleSubMenuCollapse: function(target, collapseButton, openOnly) {
-      var subMenu = Polymer.dom(this.$.drawer).querySelector('#sub-menu-' + target.tag);
+      var subMenu = Polymer.dom(this.$.drawer).querySelector('#' + target.collapseId);
       if (subMenu && (!subMenu.opened || !openOnly)) {
         subMenu.toggle();
         collapseButton.icon = subMenu.opened ? 'icons:expand-less' : 'icons:expand-more';
       }
     },
+
     _getPageTitle: function(page) {
       return this.pages.reduce(function(prev, curr) {
         if (!prev && curr.name === page) {
