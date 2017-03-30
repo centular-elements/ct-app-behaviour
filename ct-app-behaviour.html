@@ -12,6 +12,7 @@
     listeners: {
       'toast': '_toast',
       'ct-page-to': '_pageTo',
+      'ct-refresh-page': '_refreshEventHandler',
       'ct-signed-in': '_signedIn',
       'ct-signed-out': '_signedOut',
       'iron-select': '_menuItemSelected'
@@ -121,8 +122,20 @@
       this.$.refreshBtn.hidden = !this.signedIn || this.refreshablePages.indexOf(page) === -1;
     },
     _refresh: function() {
-      if (this.activeView.refresh) {
-        this.activeView.refresh();
+      this._refreshView(this.activeView)
+    },
+    _refreshEventHandler: function(e, detail) {
+      var pageToRefresh = Polymer.dom(this.$.ironPages).querySelectorAll('*').find(function(elem) {
+        var nameAttribute = elem.attributes.getNamedItem('name');
+        return nameAttribute.nodeValue == detail;
+      });
+      if (pageToRefresh) {
+        this._refreshView(pageToRefresh);
+      }
+    },
+    _refreshView: function(view) {
+      if (view.refresh) {
+        view.refresh();
       }
     },
     _computeRefreshBtnClass: function(refreshing) {
