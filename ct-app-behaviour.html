@@ -15,7 +15,6 @@
             }
         },
         listeners: {
-            'toast': '_toast',
             'ct-page-to': '_pageTo',
             'ct-refresh-page': '_refreshEventHandler',
             'ct-signed-in': '_signedIn',
@@ -145,9 +144,6 @@
         },
         _computeRefreshBtnClass: function(refreshing) {
             return refreshing ? 'rotating' : '';
-        },
-        _toast: function(event, message) {
-            this.$.toast.show(message);
         },
         _pageTo: function(event, detail) {
             window.history.pushState(null,'',detail);
