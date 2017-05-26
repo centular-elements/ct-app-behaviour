@@ -1,205 +1,206 @@
 <script>
 
-    /**
-     * @polymerBehavior CT.Behaviours.App
-     */
+  /**
+   * @polymerBehavior CT.Behaviours.App
+   */
 
-    window.CT = window.CT || {};
-    window.CT.Behaviours = window.CT.Behaviours || {};
-    CT.Behaviours.App = {
-        properties: {
-            page: {
-                type: String,
-                reflectToAttribute: true,
-                observer: '_pageChanged'
-            }
-        },
-        listeners: {
-            'ct-page-to': '_pageTo',
-            'ct-refresh-page': '_refreshEventHandler',
-            'ct-signed-in': '_signedIn',
-            'ct-signed-out': '_signedOut',
-            'iron-select': '_menuItemSelected'
-        },
-        observers: [
-            '_routePageChanged(routeData.page)',
-            '_toggleRefreshBtn(page, signedIn)',
-            '_refresh(clientId)'
-        ],
+  window.CT = window.CT || {};
+  window.CT.Behaviours = window.CT.Behaviours || {};
+  CT.Behaviours.App = {
+    properties: {
+      page: {
+        type: String,
+        reflectToAttribute: true,
+        observer: '_pageChanged'
+      }
+    },
+    listeners: {
+      'ct-page-to': '_pageTo',
+      'ct-refresh-page': '_refreshEventHandler',
+      'ct-signed-in': '_signedIn',
+      'ct-signed-out': '_signedOut',
+      'iron-select': '_menuItemSelected'
+    },
+    observers: [
+      '_routePageChanged(routeData.page)',
+      '_toggleRefreshBtn(page, signedIn)',
+      '_refresh(clientId)'
+    ],
 
-        _signedIn: function() {
-            this.signedIn = true;
-        },
+    _signedIn: function() {
+      this.signedIn = true;
+    },
 
-        _signedOut: function() {
-            this.signedIn = false;
-        },
+    _signedOut: function() {
+      this.signedIn = false;
+    },
 
-        _getTokenRedirectUri: function() {
-            return [window.location.origin, '/oauth'].join('')
-        },
+    _getTokenRedirectUri: function() {
+      return [window.location.origin, '/oauth'].join('')
+    },
 
-        _routePageChanged: function(page) {
-            if (page != 'oauth') {
-                if (!page && this.defaultPage.menuItem) {
-                    window.history.pushState(null, '', this.defaultPage.menuItem.href);
+    _routePageChanged: function(page) {
+      if (page != 'oauth') {
+        if (!page && this.defaultPage.menuItem) {
+          window.history.pushState(null, '', this.defaultPage.menuItem.href);
 
-                }
-                this.page = page || this.defaultPage.name;
-            }
-        },
-
-        _pageChanged: function(page) {
-            if (!page) {
-                return;
-            }
-            // load page import on demand.
-            this.importHref(this.resolveUrl('views/' + this.appHandle + '-' + page + '.html'), null, null, true);
-        },
-
-        _closeDrawer: function() {
-            if (this.$.drawer.persistent) {
-                return;
-            }
-            this.$.drawer.close();
-        },
-
-        _computeMenuItems: function(signedIn) {
-            return signedIn
-                ? this.pages.filter(function (page) {
-                    return page.menuItem && !page.menuItem.parent;
-                })
-                : this.pages.filter(function (page) {
-                    return this.guestPages.includes(page.name);
-                }.bind(this));
-        },
-
-        _hasSubMenuItems: function(parent) {
-            return this._computeSubMenuItems(parent).length > 0;
-        },
-
-        _computeSubMenuItems: function(parent) {
-            return this.pages.filter(function (page) {
-                return page.menuItem && page.menuItem.parent == parent;
-            });
-        },
-
-        _generateId: function(elementName, uniqueId) {
-            return elementName + '-' + uniqueId;
-        },
-
-        _collapseButtonTapped: function(e) {
-            this._toggleSubMenuCollapse(e.currentTarget, e.currentTarget, false);
-            e.stopPropagation();
-        },
-
-        _menuItemSelected: function(e) {
-            var selectedItem = Polymer.dom(this.$.topSelector).querySelector('.iron-selected');
-            if (selectedItem) {
-                this._toggleSubMenuCollapse(selectedItem, Polymer.dom(selectedItem).querySelector('paper-icon-button'), true);
-            }
-            this._closeDrawer();
-        },
-
-        _toggleSubMenuCollapse: function(target, collapseButton, openOnly) {
-            var subMenu = Polymer.dom(this.$.drawer).querySelector('#' + target.collapseId);
-            if (subMenu && (!subMenu.opened || !openOnly)) {
-                subMenu.toggle();
-                if (collapseButton) {
-                    collapseButton.icon = subMenu.opened ? 'icons:expand-less' : 'icons:expand-more';
-                }
-            }
-        },
-
-        _getPageTitle: function(page) {
-            return this.pages.reduce(function(prev, curr) {
-                if (!prev && curr.name === page) {
-                    return curr.title;
-                }
-                return prev;
-            }, null);
-        },
-        _navigateBack: function() {
-            window.history.back();
-        },
-        _toggleRefreshBtn: function(page) {
-            this.$.refreshBtn.hidden = !this.signedIn || this.refreshablePages.indexOf(page) === -1;
-        },
-        _refresh: function() {
-            this._refreshView(this.activeView)
-        },
-        _refreshEventHandler: function(e, detail) {
-            var pageToRefresh = Polymer.dom(this.$.ironPages).querySelectorAll('*').find(function(elem) {
-                var nameAttribute = elem.attributes.getNamedItem('name');
-                return nameAttribute.nodeValue == detail;
-            });
-            if (pageToRefresh) {
-                this._refreshView(pageToRefresh);
-            }
-        },
-        _refreshView: function(view) {
-            if (view.refresh) {
-                view.refresh();
-            }
-        },
-        _computeRefreshBtnClass: function(refreshing) {
-            return refreshing ? 'rotating' : '';
-        },
-        _pageTo: function(event, detail) {
-            window.history.pushState(null,'',detail);
-            this.fire('location-changed');
-        },
-        /**
-         * App pages.
-         * @returns {Page[]}
-         */
-        get pages() {
-            console.warn('No app pages registered');
-            return [];
-        },
-        /**
-         * The app handle. Used to determine view prefixes.
-         * @returns {String}
-         */
-        get appHandle() {
-            console.warn('App handle not defined');
-        },
-        /**
-         * The default app page.
-         * @returns {Page}
-         */
-        get defaultPage() {
-            console.warn('Default page not defined');
-            return CT.Page();
-        },
-        /**
-         * The app pages that can be refreshed.
-         * @returns {String[]}
-         */
-        get refreshablePages() {
-            return [];
-        },
-        /**
-         * The app pages visible without being signed in.
-         * @returns {String[]}
-         */
-        get guestPages() {
-            return [];
         }
+        this.page = page || this.defaultPage.name;
+      }
+    },
+
+    _pageChanged: function(page) {
+      if (!page) {
+        return;
+      }
+      // load page import on demand.
+      this.importHref(this.resolveUrl('views/' + this.appHandle + '-' + page + '.html'), null, null, true);
+    },
+
+    _closeDrawer: function() {
+      if (this.$$('#drawer').persistent) {
+        return;
+      }
+
+      this.$$('#drawer').close();
+    },
+
+    _computeMenuItems: function(signedIn) {
+      return signedIn
+              ? this.pages.filter(function (page) {
+        return page.menuItem && !page.menuItem.parent;
+      })
+              : this.pages.filter(function (page) {
+        return this.guestPages.includes(page.name);
+      }.bind(this));
+    },
+
+    _hasSubMenuItems: function(parent) {
+      return this._computeSubMenuItems(parent).length > 0;
+    },
+
+    _computeSubMenuItems: function(parent) {
+      return this.pages.filter(function (page) {
+        return page.menuItem && page.menuItem.parent == parent;
+      });
+    },
+
+    _generateId: function(elementName, uniqueId) {
+      return elementName + '-' + uniqueId;
+    },
+
+    _collapseButtonTapped: function(e) {
+      this._toggleSubMenuCollapse(e.currentTarget, e.currentTarget, false);
+      e.stopPropagation();
+    },
+
+    _menuItemSelected: function(e) {
+      var selectedItem = Polymer.dom(this.$$('#topSelector')).querySelector('.iron-selected');
+      if (selectedItem) {
+        this._toggleSubMenuCollapse(selectedItem, Polymer.dom(selectedItem).querySelector('paper-icon-button'), true);
+      }
+      this._closeDrawer();
+    },
+
+    _toggleSubMenuCollapse: function(target, collapseButton, openOnly) {
+      var subMenu = Polymer.dom(this.$$('#drawer')).querySelector('#' + target.collapseId);
+      if (subMenu && (!subMenu.opened || !openOnly)) {
+        subMenu.toggle();
+        if (collapseButton) {
+          collapseButton.icon = subMenu.opened ? 'icons:expand-less' : 'icons:expand-more';
+        }
+      }
+    },
+
+    _getPageTitle: function(page) {
+      return this.pages.reduce(function(prev, curr) {
+        if (!prev && curr.name === page) {
+          return curr.title;
+        }
+        return prev;
+      }, null);
+    },
+    _navigateBack: function() {
+      window.history.back();
+    },
+    _toggleRefreshBtn: function(page) {
+      this.$$('#refreshBtn').hidden = !this.signedIn || this.refreshablePages.indexOf(page) === -1;
+    },
+    _refresh: function() {
+      this._refreshView(this.activeView)
+    },
+    _refreshEventHandler: function(e, detail) {
+      var pageToRefresh = Polymer.dom(this.$$('#ironPages')).querySelectorAll('*').find(function(elem) {
+        var nameAttribute = elem.attributes.getNamedItem('name');
+        return nameAttribute.nodeValue == detail;
+      });
+      if (pageToRefresh) {
+        this._refreshView(pageToRefresh);
+      }
+    },
+    _refreshView: function(view) {
+      if (view.refresh) {
+        view.refresh();
+      }
+    },
+    _computeRefreshBtnClass: function(refreshing) {
+      return refreshing ? 'rotating' : '';
+    },
+    _pageTo: function(event, detail) {
+      window.history.pushState(null,'',detail);
+      this.fire('location-changed');
+    },
+    /**
+     * App pages.
+     * @returns {Page[]}
+     */
+    get pages() {
+      console.warn('No app pages registered');
+      return [];
+    },
+    /**
+     * The app handle. Used to determine view prefixes.
+     * @returns {String}
+     */
+    get appHandle() {
+      console.warn('App handle not defined');
+    },
+    /**
+     * The default app page.
+     * @returns {Page}
+     */
+    get defaultPage() {
+      console.warn('Default page not defined');
+      return CT.Page();
+    },
+    /**
+     * The app pages that can be refreshed.
+     * @returns {String[]}
+     */
+    get refreshablePages() {
+      return [];
+    },
+    /**
+     * The app pages visible without being signed in.
+     * @returns {String[]}
+     */
+    get guestPages() {
+      return [];
+    }
+  };
+  CT.Page = function(name, title, menuItem) {
+    return {
+      name: name,
+      title: title,
+      menuItem: menuItem
     };
-    CT.Page = function(name, title, menuItem) {
-        return {
-            name: name,
-            title: title,
-            menuItem: menuItem
-        };
+  };
+  CT.PageMenuItem = function(name, href, icon, parent) {
+    return {
+      name: name,
+      href: href,
+      icon: icon,
+      parent: parent
     };
-    CT.PageMenuItem = function(name, href, icon, parent) {
-        return {
-            name: name,
-            href: href,
-            icon: icon,
-            parent: parent
-        };
-    };
+  };
 </script>
